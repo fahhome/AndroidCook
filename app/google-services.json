@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1082539533802",
+    "firebase_url": "https://cookssilchar.firebaseio.com",
+    "project_id": "cookssilchar",
+    "storage_bucket": "cookssilchar.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1082539533802:android:e009126bbff1d050",
+        "android_client_info": {
+          "package_name": "com.homecookssec35.androidcook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1082539533802-qshapump8slbqa728bis94thv6rdla87.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.homecookssec35.androidcook",
+            "certificate_hash": "d31c1f2df3fe89027e1e6412903f4e6d7f0ba971"
+          }
+        },
+        {
+          "client_id": "1082539533802-jjk9fck62qv5ggiug468b3ssq8ue8cn8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvAYrfKZWgw4zZX8SnTZpUn5azGNoWkPU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1082539533802-jjk9fck62qv5ggiug468b3ssq8ue8cn8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

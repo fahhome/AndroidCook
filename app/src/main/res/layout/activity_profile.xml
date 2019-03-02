@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="visible"
+    tools:context=".Profile">
+
+
+    <TextView
+        android:id="@+id/textView17"
+        android:layout_width="wrap_content"
+        android:layout_height="43dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="37dp"
+        android:text="Order Description"
+        android:textSize="18sp" />
+
+
+    <EditText
+        android:id="@+id/editorderText"
+        android:layout_width="328dp"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="102dp"
+        android:ems="10"
+        android:inputType="textMultiLine" />
+
+    <Button
+        android:id="@+id/submitorederbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/textView17"
+        android:layout_below="@+id/editorderText"
+        android:text="Submit Order" />
+
+    <TextView
+        android:id="@+id/textView21"
+        android:layout_width="124dp"
+        android:layout_height="42dp"
+        android:layout_alignStart="@+id/textView17"
+        android:layout_below="@+id/submitorederbutton"
+        android:layout_marginTop="10dp"
+        android:text="Previous Order"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="332dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView21"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="23dp"
+        android:ems="10"
+        android:inputType="textMultiLine" />
+
+    <TextView
+        android:id="@+id/textView22"
+        android:layout_width="84dp"
+        android:layout_height="35dp"
+        android:layout_alignStart="@+id/textView17"
+        android:layout_below="@+id/editText2"
+        android:text="Status"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/editText5"
+        android:layout_width="227dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText2"
+        android:layout_toEndOf="@+id/textView22"
+        android:layout_marginLeft="5dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Accepted"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/button9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/editText2"
+        android:layout_below="@+id/textView22"
+        android:layout_marginTop="15dp"
+        android:text="Pay" />
+</RelativeLayout>
