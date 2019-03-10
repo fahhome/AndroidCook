@@ -49,23 +49,50 @@ public class MainActivity extends AppCompatActivity {
     public static CustomAdapter cookAdapter;
     private LocationManager locationManager;
     private LocationListener locationListener;
-
-
+   // double latval , longval ;
+    private static  double latvals=0.0, longvals=0.0;
     public static void func() {
         Log.d(tag, "after postonexecute");
         Log.d(tag, jsondata);
         try {
 
             JSONArray JA = new JSONArray(jsondata);
+            Log.d(tag , String.valueOf(latvals));
+            Log.d(tag , String.valueOf(longvals));
+            Location locationA = new Location("point A");
+            locationA.setLatitude(latvals);
+            locationA.setLongitude(longvals);
             for (int i = 0; i < JA.length(); i++) {
                 JSONObject JO = (JSONObject) JA.get(i);
 
                 String thisname = (String) JO.get("name");
                 String thiscontact = (String) JO.get("contact");
+                String latpos = (String)JO.get("latpos");
+                String longpos = (String)JO.get("longpos");
+                double latposval = Double.parseDouble(latpos);
+                double longposval = Double.parseDouble(longpos);
 
-                Cook c = new Cook(thisname, thiscontact);
-                Log.d(tag, "name is : " + c.getName());
-                cookAdapter.add(c);
+                Log.d(tag, String.valueOf(latposval));
+                Log.d(tag, String.valueOf(longposval));
+
+              /* Location locationA = new Location("point A");
+                locationA.setLatitude(latvals);
+                locationA.setLongitude(longvals); */
+
+                Location locationB = new Location("point B");
+                locationB.setLatitude(latposval);
+                locationB.setLongitude(longposval);
+
+                float distance = locationA.distanceTo(locationB);
+                Log.d(tag,String.valueOf(distance));
+
+                if( (distance/1000) < 4.12)
+                {
+                    Log.d(tag , "inside");
+                    Cook c = new Cook(thisname, thiscontact);
+                    Log.d(tag, "name is : " + c.getName());
+                    cookAdapter.add(c);
+                }
             }
 
         } catch (JSONException e) {
@@ -91,6 +118,12 @@ public class MainActivity extends AppCompatActivity {
 
                 textview.append("\n " + location.getLatitude() + " " + location.getLongitude());
                 Log.d(tag, String.valueOf(location.getLatitude()));
+                Log.d(tag, String.valueOf(location.getLongitude()));
+                latvals = location.getLatitude();
+                longvals = location.getLongitude() ;
+
+                 fetchData process = new fetchData();
+                 process.execute();
             }
 
             @Override
@@ -173,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, locationListener);
-                fetchData process = new fetchData();
-                process.execute();
+               // fetchData process = new fetchData();
+               // process.execute();
 
             }
         });

@@ -1,5 +1,6 @@
 package com.homecookssec35.androidcook;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,7 +12,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+
+
+import com.razorpay.Checkout;
+import com.razorpay.PaymentResultListener;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -21,15 +27,21 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class Profile extends AppCompatActivity {
+
+public class Profile extends AppCompatActivity implements PaymentResultListener {
 
     EditText cateringorder ;
     EditText prevorder ;
     Button submitorderbtn;
-    DatabaseReference  databaseusers ;
-    DatabaseReference  userorder ;
+    DatabaseReference  databaseusers , databaseusers2 , databaseusers3 ;
+    DatabaseReference  userorder , userorder2 , userorder3 , userorder4, userorder5 ;
+    DatabaseReference fahmid3 , fahmid4 , fahmid5 ;
     Button paybtn ;
+    EditText phone,address ;
+    TextView status , amount ;
 
     private static String tag = "fahmidprofileactivity";
     String cateringorderstr = " " ;
@@ -62,7 +74,12 @@ public class Profile extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         cateringorder = (EditText)findViewById(R.id.editorderText);
         prevorder = (EditText)findViewById(R.id.editText2);
+        phone = (EditText)findViewById(R.id.editText);
+        address = (EditText)findViewById(R.id.editText6);
+        status = (TextView) findViewById(R.id.editText5);
         cateringorderstr = cateringorder.getText().toString();
+        amount = (TextView)findViewById(R.id.textView20);
+        amount.setVisibility(View.INVISIBLE);
       //  Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
        // setSupportActionBar(toolbar);
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -70,28 +87,98 @@ public class Profile extends AppCompatActivity {
         Toast.makeText(this,"" + currentFirebaseUser.getUid(),Toast.LENGTH_LONG ).show();
         submitorderbtn = (Button)findViewById(R.id.submitorederbutton);
         paybtn = (Button)findViewById(R.id.button9);
+        paybtn.setEnabled(false);
         Log.d(tag , cateringorderstr);
         Log.d(tag , " outside click ");
+
+        userorder =  FirebaseDatabase.getInstance().getReference() ;
+        userorder = userorder.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("currentorder");
+        userorder.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Log.d(tag , "inside on datachange");
+                String orderstr =  dataSnapshot.getValue(String.class);
+                Toast.makeText(getApplicationContext() , "" + orderstr , Toast.LENGTH_LONG).show();
+                prevorder.setText(orderstr);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        fahmid3 = FirebaseDatabase.getInstance().getReference().child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("mobile");
+        fahmid3.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+               String phonestr = dataSnapshot.getValue(String.class);
+               phone.setText(phonestr);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        fahmid4 = FirebaseDatabase.getInstance().getReference().child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("address");
+        fahmid4.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String phonestr = dataSnapshot.getValue(String.class);
+                address.setText(phonestr);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        fahmid5 = FirebaseDatabase.getInstance().getReference().child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("amount");
+        fahmid5.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String amtstr = dataSnapshot.getValue(String.class);
+                amount.setText(amtstr);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+        userorder5 =  FirebaseDatabase.getInstance().getReference().child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("status");
+        userorder5.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Log.d(tag , "inside on datachange4");
+                String statusstr =  dataSnapshot.getValue(String.class);
+                //Toast.makeText(getApplicationContext() , "" + orderstr , Toast.LENGTH_LONG).show();
+                status.setText(statusstr);
+                if(statusstr.equalsIgnoreCase("accepted")){
+                    paybtn.setEnabled(true);
+                    amount.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         paybtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 userorder =  FirebaseDatabase.getInstance().getReference() ;
-                 userorder = userorder.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("currentorder");
-                 userorder.addValueEventListener(new ValueEventListener() {
-                     @Override
-                     public void onDataChange(DataSnapshot dataSnapshot) {
-
-                         Log.d(tag , "inside on datachange");
-                         String orderstr =  dataSnapshot.getValue(String.class);
-                         Toast.makeText(getApplicationContext() , "" + orderstr , Toast.LENGTH_LONG).show();
-                         prevorder.setText(orderstr);
-                     }
-
-                     @Override
-                     public void onCancelled(DatabaseError databaseError) {
-
-                     }
-                 });
+               startpayment();
             }
         });
         submitorderbtn.setOnClickListener(new View.OnClickListener() {
@@ -109,7 +196,49 @@ public class Profile extends AppCompatActivity {
                     // databaseusers.push().setValue("" + FirebaseAuth.getInstance().getCurrentUser().getUid());
                     databaseusers.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("currentorder").setValue(cateringorderstr);
                 }
+
+              /*  databaseusers2 = FirebaseDatabase.getInstance().getReference();
+                databaseusers2.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("status").setValue("Not Yet Accepted");
+
+                databaseusers3 = FirebaseDatabase.getInstance().getReference();
+                databaseusers3.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("amount").setValue("400"); */
+
             }
         });
+    }
+
+    private void startpayment(){
+
+        int totalpayamount = Integer.parseInt(amount.getText().toString());
+
+        Checkout checkout =  new Checkout();
+
+        final Activity activty = this ;
+
+        try{
+            JSONObject options = new JSONObject();
+
+            options.put("description","order #123456");
+            options.put("currency" , "INR");
+            options.put("amount" , 500);
+            checkout.open(activty,options);
+        }
+        catch(JSONException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void onPaymentSuccess(String s) {
+
+        Toast.makeText(Profile.this ,"Your Payment is successful" , Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onPaymentError(int i, String s) {
+
+        Toast.makeText(Profile.this ,"Your Payment failed" , Toast.LENGTH_SHORT).show();
+
     }
 }

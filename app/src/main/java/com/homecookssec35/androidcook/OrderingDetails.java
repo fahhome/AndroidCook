@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,14 +38,16 @@ public class OrderingDetails extends AppCompatActivity implements PaymentResultL
     public static TextView displayunitprice;
     public static Button incrementbtn , decrementbtn ;
     public static TextView quantity , totalprice ;
-    EditText phone ,address;
+    EditText phone,address,name;
+    String tag="famiddetails";
     int totalpayamount ;
     DatabaseReference fahmid ;
+    DatabaseReference fahmid2 ;
+    DatabaseReference fahmid3 ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ordering_details);
-
 
         checkoutbtn =(Button)findViewById(R.id.button7);
         cashondeliverybtn = (Button)findViewById(R.id.button8);
@@ -55,7 +59,7 @@ public class OrderingDetails extends AppCompatActivity implements PaymentResultL
         totalprice = (TextView)findViewById(R.id.textView15);
         phone = (EditText)findViewById(R.id.editText3);
         address = (EditText)findViewById(R.id.editText4);
-
+        name = (EditText)findViewById(R.id.editText7);
 
         Intent receiveintent2 = getIntent();
         String nameofdish = receiveintent2.getStringExtra("dishname");
@@ -70,11 +74,14 @@ public class OrderingDetails extends AppCompatActivity implements PaymentResultL
             DatabaseReference testref = FirebaseDatabase.getInstance().getReference();
             testref = testref.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid());
             if(testref.child("mobile") != null){
+                Log.d(tag,"inside1");
                 testref = testref.child("mobile");
                 testref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        Log.d(tag,"inside2");
                         String phonestr = dataSnapshot.getValue(String.class);
+                        Log.d(tag,phonestr);
                         phone.setText(phonestr);
                     }
                     @Override
@@ -84,22 +91,61 @@ public class OrderingDetails extends AppCompatActivity implements PaymentResultL
                 });
 
             }
-            if(testref.child("address") != null){
+            fahmid2 = FirebaseDatabase.getInstance().getReference().child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("address");
 
-                testref = testref.child("address");
+            fahmid2.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    String addrestr = dataSnapshot.getValue(String.class);
+                    address.setText(addrestr);
+                    Log.d(tag,"inside3");
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+            fahmid3 = FirebaseDatabase.getInstance().getReference().child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("name");
+
+            fahmid3.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    String namestr = dataSnapshot.getValue(String.class);
+                    name.setText(namestr);
+                    Log.d(tag,"inside4");
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            /*if(testref.child("name") != null){
+
+                testref = testref.child("name");
+                Log.d(tag,"inside5");
                 testref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                          String addrestr = dataSnapshot.getValue(String.class);
-                          address.setText(addrestr);
+                        Log.d(tag,"inside6");
+                        String namestr = dataSnapshot.getValue(String.class);
+                        name.setText(namestr);
+                        //Log.d(tag,namestr);
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
 
+
+
                     }
                 });
-            }
+
+            }*/
+
         }
 
         incrementbtn.setOnClickListener(new View.OnClickListener() {
@@ -127,13 +173,15 @@ public class OrderingDetails extends AppCompatActivity implements PaymentResultL
             public void onClick(View v) {
                // Intent intent3 =  new Intent(OrderingDetails.this,PaytmCheckOutActivity.class);
                // startActivity(intent3);
+                // save the address and mobile
                 if(FirebaseAuth.getInstance().getCurrentUser() != null){
                     String mobilestr = phone.getText().toString();
                     String addressstr = address.getText().toString();
+                    String namestr = name.getText().toString();
                     fahmid = FirebaseDatabase.getInstance().getReference();
                     fahmid.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("mobile").setValue(mobilestr);
                     fahmid.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("address").setValue(addressstr);
-
+                    fahmid.child("" + FirebaseAuth.getInstance().getCurrentUser().getUid()).child("name").setValue(namestr);
                 }
                 else{
 
