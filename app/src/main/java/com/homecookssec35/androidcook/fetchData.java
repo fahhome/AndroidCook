@@ -28,7 +28,7 @@ public class fetchData  extends AsyncTask<Void,Void,Void> {
     protected Void doInBackground(Void... voids) {
 
 
-        try {
+        /*try {
             URL url = new URL("https://api.myjson.com/bins/1h8ev6");
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
             InputStream inputStream = httpURLConnection.getInputStream();
@@ -55,13 +55,13 @@ public class fetchData  extends AsyncTask<Void,Void,Void> {
                 Log.d(tag,"name is : " + c.getName());
 
             }
-            */
+
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        } */
        return null;
     }
         @Override
@@ -69,7 +69,7 @@ public class fetchData  extends AsyncTask<Void,Void,Void> {
         super.onPostExecute(aVoid);
 
         MainActivity.jsondata=data;
-        MainActivity.func();
+        //MainActivity.func();
     }
 }
 

@@ -3,12 +3,20 @@ package com.homecookssec35.androidcook;
 public class Dish {
 
     private int id, cookId ;
-    private String nameOfDish, description,isActive , estimatedTime, productCode;
+    private String nameOfDish, description,isActive , estimatedtime, productCode;
     private double  unitPrice ;
     private boolean active ;
 
     public int getId() {
         return id;
+    }
+
+    public String getEstimatedtime() {
+        return estimatedtime;
+    }
+
+    public void setEstimatedtime(String estimatedtime) {
+        this.estimatedtime = estimatedtime;
     }
 
     public String getProductCode() {
@@ -71,7 +79,7 @@ public class Dish {
         this.active = active;
     }
 
-    public Dish(int id, int cookId, String nameOfDish, String description,  double unitPrice, boolean active,String productCode) {
+    public Dish(int id, int cookId, String nameOfDish, String description,  double unitPrice, boolean active,String productCode, String esttime) {
         this.id = id;
         this.cookId = cookId;
         this.nameOfDish = nameOfDish;
@@ -79,5 +87,6 @@ public class Dish {
         this.isActive = isActive;
         this.unitPrice = unitPrice;
         this.productCode = productCode;
+        this.estimatedtime = esttime ;
     }
 }

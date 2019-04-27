@@ -10,6 +10,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -21,6 +24,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,37 +53,81 @@ public class SecondActivity extends AppCompatActivity {
     public static CustomAdapter dishAdapter ;
     public static Button placeorderbutton ;
     public static Button testButton ;
-    String selectedcookname = "";
+    public static String selectedcookname = "";
+    public static DatabaseReference fahmid ;
+    public static String mobilenumber ;
+    public static String latitude,longitude ;
+
     public static void afterjsonretrieval(){
         Log.d(tag,"after postonexecute");
-        Log.d(tag, jsondishes);
+        Log.d(tag, selectedcookname);
 
-        try {
+         //dishAdapter.clear();
+         fahmid = FirebaseDatabase.getInstance().getReference().child("Cooks").child(selectedcookname).child("Products");
+        fahmid.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
-            JSONArray JA = new JSONArray(jsondishes);
-            for (int i = 0; i < JA.length(); i++) {
-                JSONObject JO = (JSONObject) JA.get(i);
-
-                int id = (int)JO.get("id");
-                String thisproductcode = (String) JO.get("code");
-                String thisdescription = (String) JO.get("description");
-                String thisdishname = (String)JO.get("name");
-                double dishunitprice = (double) JO.get("unitPrice");
-                int dishcookid = (int) JO.get("cookId");
-                boolean dishactive = (boolean)JO.get("active");
-                if(dishcookid == 2)
-                {
-                    Dish d = new Dish(id,dishcookid,thisdishname,thisdescription,dishunitprice,dishactive,thisproductcode.toLowerCase());
-                    Log.d(tag, "name is : " + d.getNameOfDish());
-                    dishAdapter.add(d);
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                   Product prod = ds.getValue(Product.class);
+                   Dish d = new Dish(Integer.parseInt(prod.getId()),Integer.parseInt(prod.getCookId()),prod.getName(),prod.getDescription(),Double.parseDouble(prod.getUnitprice()),Boolean.parseBoolean(prod.getActive()),prod.getCode(),prod.getEstimatedtime());
+                   if(prod.getActive().equalsIgnoreCase("true"))
+                   {
+                       dishAdapter.add(d);
+                   }
                 }
-
             }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        MenuItem logoutitem = menu.findItem(R.id.menulogout);
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            logoutitem.setEnabled(false);
         }
-        catch (JSONException e) {
-            e.printStackTrace();
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.menulogout:
+                FirebaseAuth.getInstance().signOut();
+                finish();
+                startActivity(new Intent(this, MainActivity.class));
+                break;
+            case R.id.menuhelp:
+                startActivity(new Intent(this, Help.class));
+                break;
+            case R.id.menuorder :
+                if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    Intent intent3 =  new Intent(this,LoginUserActivity.class);
+                    startActivity(intent3);
+                }
+                else{
+                    Intent intent2 =  new Intent(this,Profile.class);
+                    startActivity(intent2);
+                }
+                break;
         }
+
+        return true;
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,33 +138,13 @@ public class SecondActivity extends AppCompatActivity {
 
         Intent receiveIntent = getIntent();
         selectedcookname = receiveIntent.getStringExtra("Cookname");
-
+        mobilenumber = receiveIntent.getStringExtra("mobilenumber");
+        latitude = receiveIntent.getStringExtra("latitude");
+        longitude = receiveIntent.getStringExtra("longitude");
         dishAdapter = new CustomAdapter(this,R.layout.customproductslayout);
         secondlistView =  (ListView)findViewById(R.id.listdishes);
-        testButton = (Button)findViewById(R.id.button2);
-        testButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(tag,"inside on click");
-               if(FirebaseAuth.getInstance().getCurrentUser() != null){
-                   Log.d(tag,"if condition");
-                   Intent intent2 =  new Intent(SecondActivity.this,Profile.class);
-                   startActivity(intent2);
-
-               }
-               else{
-                   Log.d(tag,"else condition");
-                  // Intent intent2 =  new Intent(SecondActivity.this,LoginUserActivity.class);
-                   Intent intent3 =  new Intent(SecondActivity.this,SignUpActivity.class);
-                   startActivity(intent3);
-               // Log.d(tag,"on click");
-               }
-
-            }
-        });
         secondlistView.setAdapter(dishAdapter);
-        fetchProducts fp = new fetchProducts();
-        fp.execute();
+        this.afterjsonretrieval();
     }
 
     class fetchProducts  extends AsyncTask<Void,Void,Void>{
@@ -198,6 +230,7 @@ public class SecondActivity extends AppCompatActivity {
             TextView txt1 = (TextView)convertView.findViewById(R.id.textView4);
             TextView txt2 = (TextView)convertView.findViewById(R.id.textView5);
             TextView txt3 = (TextView)convertView.findViewById(R.id.textView6);
+            TextView txt4 = (TextView)convertView.findViewById(R.id.estimatedtext);
             ImageView imageview = (ImageView) convertView.findViewById(R.id.imageView);
 
             final Dish thisdish =  (Dish)this.getItem(position);
@@ -205,15 +238,21 @@ public class SecondActivity extends AppCompatActivity {
             txt1.setText(thisdish.getNameOfDish());
             txt2.setText(thisdish.getUnitPrice()+ "");
             txt3.setText(thisdish.getDescription());
+            txt4.setText(thisdish.getEstimatedtime());
             txt1.setTextColor(Color.RED);
             placeorderbutton = (Button)convertView.findViewById(R.id.button3);
             placeorderbutton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent2 =  new Intent(SecondActivity.this,OrderingDetails.class);
-                    intent2.putExtra("unitprice" , "100");
-                    intent2.putExtra("dishname", "Biryani");
+                    intent2.putExtra("unitprice" , String.valueOf(thisdish.getUnitPrice()) );
+                    intent2.putExtra("dishname" , thisdish.getNameOfDish() );
+                    intent2.putExtra("mobilenumber", mobilenumber);
+                    intent2.putExtra("latitude",latitude);
+                    intent2.putExtra("longitude",longitude);
+                    intent2.putExtra("cookname" , selectedcookname);
                     startActivity(intent2);
+
                 }
             });
             final Context c = getApplicationContext();
